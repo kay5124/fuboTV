@@ -50,7 +50,10 @@ namespace fuboTV_Crawler
             button1.Click += (s, e) =>
             {
                 List<fuboSportModel> listFuboData = new List<fuboSportModel>();
-                var response = RequestAPI("https://api.fubo.tv/content?promoted=match&upcoming&types=programWithAssets,link&limit=1000");
+                string startTime = DateTime.Now.AddDays(-1).ToString("yyyy-MM-ddT16:00:00.000Z");
+                string endTime = DateTime.Now.AddDays(7).ToString("yyyy-MM-ddT15:59:59.999Z");
+                var response = RequestAPI($"https://api.fubo.tv/content?programType=match&playing=stream%2Clookback&qualifiers=live&sportId=-1&startTime={ startTime }&endTime={ endTime }&upcoming=true&limit=-1");
+                //var response = RequestAPI("https://api.fubo.tv/content?promoted=match&upcoming&types=programWithAssets,link&limit=1000");
                 if (string.IsNullOrEmpty(response))
                     return;
 
@@ -68,6 +71,9 @@ namespace fuboTV_Crawler
                     {
                         fuboSportModel tempData = new fuboSportModel();
                         JObject data = (JObject)joData["metadata"];
+                        if (!data.ContainsKey("teamsMetadata"))
+                            continue;
+
                         tempData.programId = joData["programId"].ToString();
                         tempData.sportId = data["sports"][0]["id"].ToString().ToInt();
                         tempData.sport = data["sports"][0]["name"].ToString();
